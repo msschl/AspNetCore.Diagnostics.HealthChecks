@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
 
 namespace HealthChecks.UI.Configuration
 {
@@ -9,6 +11,10 @@ namespace HealthChecks.UI.Configuration
         internal int EvaluationTimeInSeconds { get; set; } = 10;
         internal int MinimumSecondsBetweenFailureNotifications { get; set; } = 60 * 10;
         internal string HealthCheckDatabaseConnectionString { get; set; }
+        internal Func<IServiceProvider, HttpMessageHandler> ApiEndpointHttpHandler { get; private set; }
+        internal Action<IServiceProvider, HttpClient> ApiEndpointHttpClientConfig { get; private set; }
+        internal Func<IServiceProvider, HttpMessageHandler> WebHooksEndpointHttpHandler { get; private set; }
+        internal Action<IServiceProvider, HttpClient> WebHooksEndpointHttpClientConfig { get; private set; }
 
         public Settings AddHealthCheckEndpoint(string name, string uri)
         {
@@ -20,7 +26,7 @@ namespace HealthChecks.UI.Configuration
 
             return this;
         }
-        
+
         public Settings AddWebhookNotification(string name, string uri, string payload, string restorePayload = "")
         {
             Webhooks.Add(new WebHookNotification
@@ -38,7 +44,7 @@ namespace HealthChecks.UI.Configuration
             EvaluationTimeInSeconds = seconds;
             return this;
         }
-        
+
         public Settings SetMinimumSecondsBetweenFailureNotifications(int seconds)
         {
             MinimumSecondsBetweenFailureNotifications = seconds;
@@ -48,6 +54,30 @@ namespace HealthChecks.UI.Configuration
         public Settings SetHealthCheckDatabaseConnectionString(string connectionString)
         {
             HealthCheckDatabaseConnectionString = connectionString;
+            return this;
+        }
+
+        public Settings UseApiEndpointHttpMessageHandler(Func<IServiceProvider, HttpClientHandler> apiEndpointHttpHandler)
+        {
+            ApiEndpointHttpHandler = apiEndpointHttpHandler;
+            return this;
+        }
+
+        public Settings UseWebhookEndpointHttpMessageHandler(Func<IServiceProvider, HttpClientHandler> webhookEndpointHttpHandler)
+        {
+            WebHooksEndpointHttpHandler = webhookEndpointHttpHandler;
+            return this;
+        }
+
+        public Settings ConfigureApiEndpointHttpclient(Action<IServiceProvider, HttpClient> apiEndpointHttpClientconfig)
+        {
+            ApiEndpointHttpClientConfig = apiEndpointHttpClientconfig;
+            return this;
+        }
+
+        public Settings ConfigureWebhooksEndpointHttpclient(Action<IServiceProvider, HttpClient> webhooksEndpointHttpClientconfig)
+        {
+            WebHooksEndpointHttpClientConfig = webhooksEndpointHttpClientconfig;
             return this;
         }
     }
